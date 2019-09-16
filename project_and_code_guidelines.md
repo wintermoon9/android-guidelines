@@ -2,7 +2,7 @@
 
 ## 1.1 Project structure
 
-New projects should follow the Android Gradle project structure that is defined on the [Android Gradle plugin user guide](http://tools.android.com/tech-docs/new-build-system/user-guide#TOC-Project-Structure). The [ribot Boilerplate](https://github.com/ribot/android-boilerplate) project is a good reference to start from.
+New projects should follow the Android Gradle project structure that is defined on the [Android Gradle plugin user guide](http://tools.android.com/tech-docs/new-build-system/user-guide#TOC-Project-Structure).
 
 ## 1.2 File naming
 
@@ -30,6 +30,7 @@ Naming conventions for drawables:
 | Menu         | `menu_	`           | `menu_submenu_bg.9.png`     |
 | Notification | `notification_`	| `notification_bg.9.png`     |
 | Tabs         | `tab_`            | `tab_pressed.9.png`         |
+| Toolbar         | `tb_`            | `tb_home.9.png`         |
 
 Naming conventions for icons (taken from [Android iconography guidelines](http://developer.android.com/design/style/iconography.html)):
 
@@ -61,11 +62,12 @@ Layout files should match the name of the Android components that they are inten
 | ---------------- | ---------------------- | ----------------------------- |
 | Activity         | `UserProfileActivity`  | `activity_user_profile.xml`   |
 | Fragment         | `SignUpFragment`       | `fragment_sign_up.xml`        |
+| View             | `SignInView`           | `view_sign_in.xml`            |
 | Dialog           | `ChangePasswordDialog` | `dialog_change_password.xml`  |
 | AdapterView item | ---                    | `item_person.xml`             |
-| Partial layout   | ---                    | `partial_stats_bar.xml`       |
+| Partial          | ---                    | `partial_toolbar.xml`         |
 
-A slightly different case is when we are creating a layout that is going to be inflated by an `Adapter`, e.g to populate a `ListView`. In this case, the name of the layout should start with `item_`.
+A slightly different case is when we are creating a layout that is going to be inflated by an `Adapter`, e.g to populate a `RecyclerView`. In this case, the name of the layout should start with `item_`.
 
 Note that there are cases where these rules will not be possible to apply. For example, when creating layout files that are intended to be part of other layouts. In this case you should use the prefix `partial_`.
 
@@ -129,27 +131,29 @@ This is good: `import foo.Bar;`
 
 See more info [here](https://source.android.com/source/code-style.html#fully-qualify-imports)
 
-## 2.2 Java style rules
+## 2.2 Kotlin style rules
 
 ### 2.2.1 Fields definition and naming
 
 Fields should be defined at the __top of the file__ and they should follow the naming rules listed below.
 
-* Private, non-static field names start with __m__.
-* Private, static field names start with __s__.
-* Other fields start with a lower case letter.
+* Public, non-static fields should go at the very top.
+* Private, non-static fields should go below public non-static fields.
+* Private, static fields should go in the companion object.
 * Static final fields (constants) are ALL_CAPS_WITH_UNDERSCORES.
 
 Example:
 
-```java
+```kotlin
 public class MyClass {
-    public static final int SOME_CONSTANT = 42;
-    public int publicField;
-    private static MyClass sSingleton;
-    int mPackagePrivate;
-    private int mPrivate;
-    protected int mProtected;
+    var a: Int
+    var b: Int
+    private var c: Int
+    
+    companion object {
+        const val D = 1
+        private const val E = 2
+    }
 }
 ```
 
@@ -181,22 +185,6 @@ Instrument i =
 
 ### 2.2.5 Use standard brace style
 
-Braces go on the same line as the code before them.
-
-```java
-class MyClass {
-    int func() {
-        if (something) {
-            // ...
-        } else if (somethingElse) {
-            // ...
-        } else {
-            // ...
-        }
-    }
-}
-```
-
 Braces around the statements are required unless the condition and the body fit on one line.
 
 If the condition and the body fit on one line and that line is shorter than the max line length, then braces are not required, e.g.
@@ -217,8 +205,6 @@ if (condition)
 #### 2.2.6.1 Annotations practices
 
 According to the Android code style guide, the standard practices for some of the predefined annotations in Java are:
-
-* `@Override`: The @Override annotation __must be used__ whenever a method overrides the declaration or implementation from a super-class. For example, if you use the @inheritdocs Javadoc tag, and derive from a class (not an interface), you must also annotate that the method @Overrides the parent class's method.
 
 * `@SuppressWarnings`: The @SuppressWarnings annotation should only be used under circumstances where it is impossible to eliminate a warning. If a warning passes this "impossible to eliminate" test, the @SuppressWarnings annotation must be used, so as to ensure that all warnings reflect actual problems in the code.
 
@@ -310,54 +296,30 @@ There is no single correct solution for this but using a __logical__ and __consi
 5. Public methods
 6. Private methods
 7. Inner classes or interfaces
+8. Companion object ( Kotlin )
 
 Example:
 
-```java
-public class MainActivity extends Activity {
+```kotlin
+class MainActivity : Activity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    val TAG = MainActivity.class.getSimpleName()
 
-    private String mTitle;
-    private TextView mTextViewTitle;
+    var abc = 222
+    
+    private var title: String;
 
-    @Override
-    public void onCreate() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        ...
+    }
+    
+    private fun setUpView() {
         ...
     }
 
-    public void setTitle(String title) {
-    	mTitle = title;
+    companion object {
+	const val HELLO = 123
     }
-
-    private void setUpView() {
-        ...
-    }
-
-    static class AnInnerClass {
-
-    }
-
-}
-```
-
-If your class is extending an __Android component__ such as an Activity or a Fragment, it is a good practice to order the override methods so that they __match the component's lifecycle__. For example, if you have an Activity that implements `onCreate()`, `onDestroy()`, `onPause()` and `onResume()`, then the correct order is:
-
-```java
-public class MainActivity extends Activity {
-
-	//Order matches Activity lifecycle
-    @Override
-    public void onCreate() {}
-
-    @Override
-    public void onResume() {}
-
-    @Override
-    public void onPause() {}
-
-    @Override
-    public void onDestroy() {}
 
 }
 ```
@@ -388,7 +350,7 @@ When using one of these components, you __must__ define the keys as a `static fi
 | -----------------  | ----------------- |
 | SharedPreferences  | `PREF_`             |
 | Bundle             | `BUNDLE_`           |
-| Fragment Arguments | `ARGUMENT_`         |
+| Fragment Arguments | `ARG_`              |
 | Intent Extra       | `EXTRA_`            |
 | Intent Action      | `ACTION_`           |
 
@@ -413,25 +375,35 @@ When data is passed into an `Activity` or `Fragment` via an `Intent` or a `Bundl
 
 When an `Activity` or `Fragment` expects arguments, it should provide a `public static` method that facilitates the creation of the relevant `Intent` or `Fragment`.
 
-In the case of Activities the method is usually called `getStartIntent()`:
+In the case of Activities the method is usually called `create()`:
 
-```java
-public static Intent getStartIntent(Context context, User user) {
-	Intent intent = new Intent(context, ThisActivity.class);
-	intent.putParcelableExtra(EXTRA_USER, user);
-	return intent;
+```kotlin
+class MyActivity: Activity() {
+   
+    companion object {
+        private const val EXTRA_USER = "user"
+	
+	fun create(context: Context, user: String) = Intent(context, MyActivity::class.java).apply {
+	    putStringExtra(EXTRA_USER, user)
+	}
+    }
 }
 ```
 
 For Fragments it is named `newInstance()` and handles the creation of the Fragment with the right arguments:
 
-```java
-public static UserFragment newInstance(User user) {
-	UserFragment fragment = new UserFragment();
-	Bundle args = new Bundle();
-	args.putParcelable(ARGUMENT_USER, user);
-	fragment.setArguments(args)
-	return fragment;
+```kotlin
+class MyFragment: Fragment() {
+   
+    companion object {
+        private const val ARG_USER = "user"
+	
+	fun create(context: Context, user: String) = MyFragment().apply {
+	    arguments = Bundle().apply {
+	        putString(ARG_USER, user)
+	    }
+	}
+    }
 }
 ```
 
@@ -535,7 +507,7 @@ This is good:
 
 ```xml
 <TextView
-	android:id="@+id/text_view_profile"
+	android:id="@+id/txtName"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content" />
 ```
@@ -545,7 +517,7 @@ This is __bad__ :
 ```xml
 <!-- Don\'t do this! -->
 <TextView
-    android:id="@+id/text_view_profile"
+    android:id="@+id/txtName"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 </TextView>
@@ -554,7 +526,7 @@ This is __bad__ :
 
 ### 2.3.2 Resources naming
 
-Resource IDs and names are written in __lowercase_underscore__.
+Resource IDs and names are written in camel-case.
 
 #### 2.3.2.1 ID naming
 
@@ -563,16 +535,16 @@ IDs should be prefixed with the name of the element in lowercase underscore. For
 
 | Element            | Prefix            |
 | -----------------  | ----------------- |
-| `TextView`           | `text_`             |
-| `ImageView`          | `image_`            |
-| `Button`             | `button_`           |
-| `Menu`               | `menu_`             |
+| `TextView`           | `txt`             |
+| `ImageView`          | `iv`            |
+| `Button`             | `btn`           |
+| `Menu`               | `menu`             |
 
 Image view example:
 
 ```xml
 <ImageView
-    android:id="@+id/image_profile"
+    android:id="@+id/ivAvatar"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 ```
@@ -582,7 +554,7 @@ Menu example:
 ```xml
 <menu>
 	<item
-        android:id="@+id/menu_done"
+        android:id="@+id/menuDone"
         android:title="Done" />
 </menu>
 ```
@@ -603,7 +575,7 @@ String names start with a prefix that identifies the section they belong to. For
 
 #### 2.3.2.3 Styles and Themes
 
-Unlike the rest of resources, style names are written in __UpperCamelCase__.
+Style names are written in __UpperCamelCase__.
 
 ### 2.3.3 Attributes ordering
 
